@@ -1,5 +1,5 @@
-import $ from 'jquery';
+import $ from 'jquery-slim';
 
-$(document).ready(function () {
+$(document).ready(() => {
     console.log('jQuery is working!');
 });
