@@ -2,6 +2,10 @@
 
 {% extends "base.html" %}
 
+{% block meta %}
+<!-- INSERT META TAGS HERE -->
+{% endblock %}
+
 {% block content %}
 <h1>Welcome to My Static Site!</h1>
 <p>This is a sample static site generated using Gulp.</p>
@@ -9,4 +13,8 @@
     ENV: {{ ENV }} <br />
     URL: <a href="{{ URL }}">{{ URL }}</a>
 </code>
+{% endblock %}
+
+{% block footer %}
+<!-- INSERT SCRIPTS IF NEEDED -->
 {% endblock %}
