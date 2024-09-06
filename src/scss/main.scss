@@ -1,6 +1,12 @@
+@import 'global/global';
+
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
+    font-family: $font-family;
+    background-color: $lightGray;
+    color: $black;
     padding: 20px 15px 20px 15px;
+}
+
+a {
+    color: $primary;
 }

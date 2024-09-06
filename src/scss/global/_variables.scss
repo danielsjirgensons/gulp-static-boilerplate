@@ -1,0 +1,37 @@
+$black: #343a40;
+
+$primary: #007bff;
+$secondary: #0056b3;
+
+$darkGray: #6c757d;
+$gray: #adb5bd;
+$lightGray: #e9ecef;
+
+$error: #dc3545;
+$warning: #ffc107;
+$success: #28a745;
+
+$white: #{'rgba(255,255,255,1)'};
+$transparent: #{'rgba(255,255,255,0)'};
+
+// Fonts
+$font-family: "Arial", "Helvetica Neue", sans-serif;
+
+// Gutters
+$margin: 15px;
+$smallMargin: 5px;
+$mediumMargin: 10px;
+$bigMargin: $margin * 2; // 30px
+
+// Media
+$breakpoints: (
+  xs: 0,        // extra small
+  vs: 412px,    // very small
+  sm: 576px,    // small
+  md: 768px,    // medium
+  lg: 992px,    // large
+  xl: 1200px,   // extra large
+  xxl: 1400px,  // extra extra large
+  vxl: 1600px,  // very extra large
+  fhd: 1800px   // Full HD Screen
+) !default;

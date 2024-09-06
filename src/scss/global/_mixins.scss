@@ -1,0 +1,124 @@
+@mixin full-fixed ($top: 0, $right: 0, $bottom: 0, $left: 0) {
+	width: 100%;
+    position: fixed;
+	top: $top;
+	right: $right;
+	bottom: $bottom;
+	left: $left;
+}
+
+@mixin full-absolute ($top: 0, $right: 0, $bottom: 0, $left: 0) {
+	width: 100%;
+	position: absolute;
+	top: $top;
+	right: $right;
+	bottom: $bottom;
+	left: $left;
+}
+
+@mixin x-center-absolute{
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+}
+
+@mixin flex {
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: -webkit-flex;
+	display: flex;
+}
+
+@mixin flex-wrap {
+	@include flex;
+	-webkit-flex-wrap: wrap;
+	-ms-flex-wrap: wrap;
+	flex-wrap: wrap;
+}
+
+@mixin flex-center {
+	@include flex;
+	-webkit-box-align: center;
+	-ms-flex-align: center;
+	-webkit-align-items: center;
+	align-items: center;
+}
+
+@mixin flex-column{
+	@include flex;
+	-webkit-box-orient: vertical;
+	-webkit-box-direction: normal;
+	-webkit-flex-direction: column;
+	-ms-flex-direction: column;
+	flex-direction: column;
+}
+
+@mixin border-radius($radius){
+	-webkit-border-radius: $radius;
+	-moz-border-radius: $radius;
+	border-radius: $radius;
+}
+
+@mixin x-padding($padding){
+	padding-left: $padding;
+	padding-right: $padding;
+}
+
+@mixin y-padding($padding){
+	padding-top: $padding;
+	padding-bottom: $padding;
+}
+
+@mixin x-margin($margin){
+	margin-left: $margin;
+	margin-right: $margin;
+}
+
+@mixin y-margin($margin){
+	margin-top: $margin;
+	margin-bottom: $margin;
+}
+
+@mixin icon-prop {
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+@mixin bg-prop {
+	@include icon-prop;
+	background-size: cover;
+}
+
+@mixin transition($props){
+	-webkit-transition: $props;
+	-o-transition: $props;
+	transition: $props;
+}
+
+@mixin text-overflow{
+	display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@mixin gradient($startColor, $endColor, $radius){
+	background: $startColor;
+	background: -moz-linear-gradient($radius, $startColor 0%, $endColor 100%);
+	background: -webkit-linear-gradient($radius, $startColor 0%, $endColor 100%);
+	background: linear-gradient($radius, $startColor 0%, $endColor 100%);
+}
+
+@mixin max-width($max-width) {
+	display: block;
+    width: 100%;
+    max-width: $max-width;
+    margin: 0 auto;
+}
+
+@mixin dim($size){
+	width: $size;
+	height: $size;
+}
