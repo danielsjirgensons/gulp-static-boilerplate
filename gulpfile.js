@@ -17,8 +17,13 @@ const path = require('path');
 const squoosh = require('gulp-squoosh');
 const svgmin = require('gulp-svgmin');
 const svgSprite = require('gulp-svg-sprite');
+const dotenv = require('dotenv');
+const webpackDefinePlugin = require('webpack').DefinePlugin;
 
-// TODO: asset paths
+// TODO: split into recipes
+
+// Load environment variables from .env or .env.production
+dotenv.config({ path: process.env.ENV === 'production' ? '.env.production' : '.env' });
 
 // Clean dist directory
 gulp.task('clean', function () {
@@ -59,7 +64,7 @@ gulp.task('scripts', function () {
         .pipe(named())
         .pipe(babel({ presets: ['@babel/env'] }))
         .pipe(webpack({
-            mode: 'production',
+            mode: process.env.ENV,
             module: {
                 rules: [
                     {
@@ -69,6 +74,13 @@ gulp.task('scripts', function () {
                     },
                 ],
             },
+            plugins: [
+                new webpackDefinePlugin({
+                    'process.env.ENV': JSON.stringify(process.env.ENV),
+                    'process.env.URL': JSON.stringify(process.env.URL),
+                    // Add other environment variables here if needed
+                }),
+            ],
             optimization: {
                 minimizer: [
                     new TerserPlugin({
@@ -88,8 +100,15 @@ gulp.task('scripts', function () {
 
 // Minify HTML
 gulp.task('html', function () {
+    // Pass environment variables to Nunjucks
+    const env = {
+        ENV: process.env.ENV,
+        URL: process.env.URL,
+        // Add more variables as needed
+    };
+
     return gulp.src('src/pages/**/*.html')
-        .pipe(nunjucksRender({ path: ['src/layout/'] }))
+        .pipe(nunjucksRender({ path: ['src/layout/'], data: env }))
         .pipe(htmlmin({ collapseWhitespace: true }))
         .pipe(gulp.dest('dist'))
         .pipe(browserSync.stream());

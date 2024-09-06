@@ -16,7 +16,7 @@
         "Promise": true
     },
     "rules": {
-        "indent": [2, "tab", { "SwitchCase": 1 }],
+        "indent": ["error", 4],
             "no-tabs": 0,
                 "comma-dangle": 0,
                     "no-underscore-dangle": [2, { "allow": ["_this"] }],
@@ -25,7 +25,7 @@
     },
     "settings": {
         "import/resolver": {
-            "typescript": { },
+            // "typescript": { },
             "node": {
                 "extensions": [".js", ".jsx", ".ts", ".tsx"],
                     "paths": ["node_modules/", "node_modules/@types"]
