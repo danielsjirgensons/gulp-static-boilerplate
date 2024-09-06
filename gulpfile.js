@@ -214,6 +214,14 @@ gulp.task('sprite', function () {
         .pipe(browserSync.stream());
 });
 
+// Move fonts
+gulp.task('fonts', function () {
+    return gulp.src('src/fonts/**/*.{eot,otf,ttf,woff,woff2,svg}', { encoding: false })
+        .pipe(plumber())
+        .pipe(gulp.dest('dist/assets/fonts'))
+        .pipe(browserSync.stream());
+});
+
 // Watch files for changes
 gulp.task('watch', function () {
     browserSync.init({
@@ -228,7 +236,7 @@ gulp.task('watch', function () {
 });
 
 // Default task
-gulp.task('default', gulp.series('clean', 'styles', 'scripts', 'html', 'images', 'svg', 'sprite', 'watch'));
+gulp.task('default', gulp.series('clean', 'styles', 'scripts', 'html', 'images', 'svg', 'sprite', 'fonts', 'watch'));
 
 // Build task for production
-gulp.task('build', gulp.series('clean', 'styles', 'scripts', 'html', 'images', 'svg', 'sprite'));
+gulp.task('build', gulp.series('clean', 'styles', 'scripts', 'html', 'images', 'svg', 'sprite', 'fonts'));
