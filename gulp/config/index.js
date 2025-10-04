@@ -17,7 +17,8 @@ const src = {
     svgIcons: path.join(basePaths.src, 'svg', 'icons'),
     fonts: path.join(basePaths.src, 'fonts'),
     pages: path.join(basePaths.src, 'pages'),
-    layouts: path.join(basePaths.src, 'layout')
+    layouts: path.join(basePaths.src, 'layout'),
+    data: path.join(basePaths.src, 'data')
 };
 
 // Destination paths
@@ -39,7 +40,8 @@ const watch = {
     svgIcons: path.join(src.svgIcons, '**', '*.svg'),
     pages: path.join(src.pages, '**', '*.html'),
     layouts: path.join(src.layouts, '**', '*.html'),
-    fonts: path.join(src.fonts, '**', '*.{eot,otf,ttf,woff,woff2,svg}')
+    fonts: path.join(src.fonts, '**', '*.{eot,otf,ttf,woff,woff2,svg}'),
+    data: path.join(src.data, '**', '*.json')
 };
 
 // File patterns
@@ -166,7 +168,8 @@ const options = {
         path: [src.layouts],
         data: {
             ENV: process.env.ENV,
-            URL: process.env.URL
+            URL: process.env.URL,
+            VERSION: Date.now()
         }
     }
 };

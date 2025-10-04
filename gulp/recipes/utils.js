@@ -43,7 +43,7 @@ function watchFiles() {
 
     gulp.watch(watch.scss, gulp.series('styles'));
     gulp.watch(watch.js, gulp.series('scripts'));
-    gulp.watch([watch.pages, watch.layouts], gulp.series('html'));
+    gulp.watch([watch.pages, watch.layouts, watch.data], gulp.series('html'));
     gulp.watch(watch.images, gulp.series('images'));
     gulp.watch(watch.svg, gulp.series('svg'));
     gulp.watch(watch.svgIcons, gulp.series('sprite'));
