@@ -1,0 +1,24 @@
+{
+  "site": {
+    "title": "My Static Website",
+    "description": "A modern static website built with Gulp",
+    "author": "Your Name"
+  },
+  "features": [
+    {
+      "title": "Modern Build System",
+      "description": "Powered by Gulp 5 with modular recipes",
+      "icon": "⚡"
+    },
+    {
+      "title": "Image Optimization",
+      "description": "Automatic WebP and AVIF conversion with Sharp",
+      "icon": "🖼️"
+    },
+    {
+      "title": "JSON Data Support",
+      "description": "Dynamic content from JSON data files",
+      "icon": "📄"
+    }
+  ]
+}
