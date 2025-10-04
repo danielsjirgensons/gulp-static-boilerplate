@@ -14,7 +14,9 @@ const del = require('del');
 const browserSync = require('browser-sync').create();
 const webpack = require('webpack-stream');
 const path = require('path');
-const squoosh = require('gulp-squoosh');
+const sharpOptimizeImages = require('gulp-sharp-optimize-images').default;
+const sourcemaps = require('gulp-sourcemaps');
+const notify = require('gulp-notify');
 const svgmin = require('gulp-svgmin');
 const svgSprite = require('gulp-svg-sprite');
 const dotenv = require('dotenv');
@@ -32,27 +34,38 @@ gulp.task('clean', function () {
 
 // Compile SCSS to CSS with autoprefixing and minification
 gulp.task('styles', function () {
+    const isDev = process.env.ENV !== 'production';
+    
     return gulp.src('src/scss/**/*.scss')
-        .pipe(plumber())
+        .pipe(plumber({
+            errorHandler: notify.onError({
+                title: 'SCSS Compilation Error',
+                message: '<%= error.message %>'
+            })
+        }))
+        .pipe(isDev ? sourcemaps.init() : require('stream').PassThrough({ objectMode: true }))
         .pipe(sass().on('error', sass.logError))
         .pipe(postcss(
             [
                 autoprefixer({
                     overrideBrowserslist: [
-                        '> 0.1%, last 10 versions',
-                        'ie >= 11',
-                        'IOS >= 7'
+                        '> 1%',
+                        'last 2 versions',
+                        'not dead',
+                        'not ie <= 11'
                     ]
                 }),
-                cssnano({
+                isDev ? null : cssnano({
                     preset: [
                         'default',
                         {
                             discardComments: { removeAll: true }
                         }
                     ]
-                })]
+                })
+            ].filter(Boolean)
         ))
+        .pipe(isDev ? sourcemaps.write('.') : require('stream').PassThrough({ objectMode: true }))
         .pipe(gulp.dest('dist/assets/css'))
         .pipe(browserSync.stream());
 });
@@ -119,35 +132,27 @@ gulp.task('images', function () {
     return gulp.src('src/images/**/*')
         .pipe(plumber())
         .pipe(
-            squoosh(({ width, height, size, filePath }) => {
-                let options = {
-                    encodeOptions: { mozjpeg: {} }
-                };
+            sharpOptimizeImages({
+                // JPEGs > JPEG + WebP
+                jpg_to_jpg: {
+                    quality: 90,
+                    mozjpeg: true
+                },
+                webp: {
+                    quality: 80,
+                    alsoProcessOriginal: true
+                },
 
-                if (path.extname(filePath) === '.jpg') {
-                    options = {
-                        encodeOptions: {
-                            webp: {},
-                            mozjpeg: {},
-                        },
-                    };
-                }
+                // PNGs > PNG + WebP
+                png_to_png: {
+                    compressionLevel: 9,
+                    adaptiveFiltering: true
+                },
 
-                if (path.extname(filePath) === '.png') {
-                    options = {
-                        encodeOptions: {
-                            oxipng: {},
-                        },
-                        preprocessOptions: {
-                            quant: {
-                                enabled: true,
-                                numColors: 16,
-                            },
-                        },
-                    };
-                }
-
-                return options;
+                // AVIF output
+                avif: {
+                    quality: 90
+                },
             })
         )
         .pipe(gulp.dest('dist/assets/images'));
@@ -230,6 +235,7 @@ gulp.task('watch', function () {
     gulp.watch('src/scss/**/*.scss', gulp.series('styles'));
     gulp.watch('src/js/**/*.js', gulp.series('scripts'));
     gulp.watch('src/pages/**/*.html', gulp.series('html'));
+    gulp.watch('src/layout/**/*.html', gulp.series('html')); // Watch layout templates
     gulp.watch('src/images/**/*', gulp.series('images'));
     gulp.watch('src/svg/**/*.svg', gulp.series('svg'));
     gulp.watch('src/svg/icons/**/*.svg', gulp.series('sprite'));
