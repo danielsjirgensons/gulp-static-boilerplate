@@ -1,248 +1,49 @@
 const gulp = require('gulp');
-const babel = require('gulp-babel');
-const sass = require('gulp-sass')(require('sass'));
-const postcss = require('gulp-postcss');
-const autoprefixer = require('autoprefixer');
-const cssnano = require('cssnano');
-const uglify = require('gulp-uglify');
-const plumber = require('gulp-plumber');
-const named = require('vinyl-named');
-const TerserPlugin = require('terser-webpack-plugin');
-const nunjucksRender = require('gulp-nunjucks-render');
-const htmlmin = require('gulp-htmlmin');
-const del = require('del');
-const browserSync = require('browser-sync').create();
-const webpack = require('webpack-stream');
-const path = require('path');
-const sharpOptimizeImages = require('gulp-sharp-optimize-images').default;
-const sourcemaps = require('gulp-sourcemaps');
-const notify = require('gulp-notify');
-const svgmin = require('gulp-svgmin');
-const svgSprite = require('gulp-svg-sprite');
 const dotenv = require('dotenv');
-const webpackDefinePlugin = require('webpack').DefinePlugin;
-
-// TODO: split into recipes
 
 // Load environment variables from .env or .env.production
 dotenv.config({ path: process.env.ENV === 'production' ? '.env.production' : '.env' });
 
-// Clean dist directory
-gulp.task('clean', function () {
-    return del(['dist']);
-});
+// Import recipes
+const styles = require('./gulp/recipes/styles');
+const scripts = require('./gulp/recipes/scripts');
+const html = require('./gulp/recipes/html');
+const images = require('./gulp/recipes/images');
+const {
+    svg,
+    sprite
+} = require('./gulp/recipes/svg');
+const {
+    clean,
+    fonts,
+    serve,
+    watchFiles
+} = require('./gulp/recipes/utils');
 
-// Compile SCSS to CSS with autoprefixing and minification
-gulp.task('styles', function () {
-    const isDev = process.env.ENV !== 'production';
-    
-    return gulp.src('src/scss/**/*.scss')
-        .pipe(plumber({
-            errorHandler: notify.onError({
-                title: 'SCSS Compilation Error',
-                message: '<%= error.message %>'
-            })
-        }))
-        .pipe(isDev ? sourcemaps.init() : require('stream').PassThrough({ objectMode: true }))
-        .pipe(sass().on('error', sass.logError))
-        .pipe(postcss(
-            [
-                autoprefixer({
-                    overrideBrowserslist: [
-                        '> 1%',
-                        'last 2 versions',
-                        'not dead',
-                        'not ie <= 11'
-                    ]
-                }),
-                isDev ? null : cssnano({
-                    preset: [
-                        'default',
-                        {
-                            discardComments: { removeAll: true }
-                        }
-                    ]
-                })
-            ].filter(Boolean)
-        ))
-        .pipe(isDev ? sourcemaps.write('.') : require('stream').PassThrough({ objectMode: true }))
-        .pipe(gulp.dest('dist/assets/css'))
-        .pipe(browserSync.stream());
-});
+// Register tasks
+gulp.task('clean', clean);
+gulp.task('styles', styles);
+gulp.task('scripts', scripts);
+gulp.task('html', html);
+gulp.task('images', images);
+gulp.task('svg', svg);
+gulp.task('sprite', sprite);
+gulp.task('fonts', fonts);
+gulp.task('serve', serve);
+gulp.task('watchFiles', watchFiles);
 
-// Compile and minify JS with Babel and Webpack
-gulp.task('scripts', function () {
-    return gulp.src('src/js/*.js')
-        .pipe(plumber())
-        .pipe(named())
-        .pipe(babel({ presets: ['@babel/env'] }))
-        .pipe(webpack({
-            mode: process.env.ENV,
-            module: {
-                rules: [
-                    {
-                        test: /\.js$/,
-                        exclude: /node_modules/,
-                        loader: 'babel-loader',
-                    },
-                ],
-            },
-            plugins: [
-                new webpackDefinePlugin({
-                    'process.env.ENV': JSON.stringify(process.env.ENV),
-                    'process.env.URL': JSON.stringify(process.env.URL),
-                    // Add other environment variables here if needed
-                }),
-            ],
-            optimization: {
-                minimizer: [
-                    new TerserPlugin({
-                        terserOptions: {
-                            format: {
-                                comments: false, // Disable comments extraction
-                            },
-                        },
-                        extractComments: false, // Prevent the creation of .LICENSE files
-                    }),
-                ],
-            },
-        }))
-        .pipe(gulp.dest('dist/assets/js'))
-        .pipe(browserSync.stream());
-});
+// Composite tasks
+gulp.task('watch', gulp.series('serve', 'watchFiles'));
 
-// Minify HTML
-gulp.task('html', function () {
-    // Pass environment variables to Nunjucks
-    const env = {
-        ENV: process.env.ENV,
-        URL: process.env.URL,
-        // Add more variables as needed
-    };
+// Default task - Development mode
+gulp.task('default', gulp.series(
+    'clean',
+    gulp.parallel('styles', 'scripts', 'html', 'images', 'svg', 'sprite', 'fonts'),
+    'watch'
+));
 
-    return gulp.src('src/pages/**/*.html')
-        .pipe(nunjucksRender({ path: ['src/layout/'], data: env }))
-        .pipe(htmlmin({ collapseWhitespace: true }))
-        .pipe(gulp.dest('dist'))
-        .pipe(browserSync.stream());
-});
-
-// Optimize images
-gulp.task('images', function () {
-    return gulp.src('src/images/**/*')
-        .pipe(plumber())
-        .pipe(
-            sharpOptimizeImages({
-                // JPEGs > JPEG + WebP
-                jpg_to_jpg: {
-                    quality: 90,
-                    mozjpeg: true
-                },
-                webp: {
-                    quality: 80,
-                    alsoProcessOriginal: true
-                },
-
-                // PNGs > PNG + WebP
-                png_to_png: {
-                    compressionLevel: 9,
-                    adaptiveFiltering: true
-                },
-
-                // AVIF output
-                avif: {
-                    quality: 90
-                },
-            })
-        )
-        .pipe(gulp.dest('dist/assets/images'));
-});
-
-// Optimize and create SVGs
-gulp.task('svg', function () {
-    return gulp.src('src/svg/**/*.svg')
-        .pipe(plumber())
-        .pipe(svgmin({
-            multipass: true,
-            full: true,
-            plugins: [
-                {
-                    name: 'cleanupIDs',
-                    active: false
-                },
-                {
-                    name: 'removeXMLProcInst',
-                },
-                {
-                    name: 'removeXMLNS',
-                },
-                {
-                    name: 'inlineStyles',
-                    param: {
-                        onlyMatchedOnce: true
-                    }
-                },
-                {
-                    name: 'removeAttrs',
-                    params: {
-                        attrs: 'fill'
-                    }
-                }
-            ]
-        }))
-        .pipe(gulp.dest('dist/assets/svg'))
-        .pipe(browserSync.stream());
-});
-
-// Optimize and create SVG sprite
-gulp.task('sprite', function () {
-    return gulp.src('src/svg/icons/**/*.svg')
-        .pipe(plumber())
-        .pipe(svgSprite({
-            shape: {
-                id: {
-                    generator: 'icon-%s'
-                },
-                dimension: { // Set maximum dimensions
-                    maxWidth: 32,
-                    maxHeight: 32
-                },
-            },
-            mode: {
-                symbol: {
-                    inline: true,
-                    sprite: "../sprite.svg"
-                }
-            }
-        }))
-        .pipe(gulp.dest('dist/assets/svg'))
-        .pipe(browserSync.stream());
-});
-
-// Move fonts
-gulp.task('fonts', function () {
-    return gulp.src('src/fonts/**/*.{eot,otf,ttf,woff,woff2,svg}', { encoding: false })
-        .pipe(plumber())
-        .pipe(gulp.dest('dist/assets/fonts'))
-        .pipe(browserSync.stream());
-});
-
-// Watch files for changes
-gulp.task('watch', function () {
-    browserSync.init({
-        server: { baseDir: './dist' }
-    });
-    gulp.watch('src/scss/**/*.scss', gulp.series('styles'));
-    gulp.watch('src/js/**/*.js', gulp.series('scripts'));
-    gulp.watch('src/pages/**/*.html', gulp.series('html'));
-    gulp.watch('src/layout/**/*.html', gulp.series('html')); // Watch layout templates
-    gulp.watch('src/images/**/*', gulp.series('images'));
-    gulp.watch('src/svg/**/*.svg', gulp.series('svg'));
-    gulp.watch('src/svg/icons/**/*.svg', gulp.series('sprite'));
-});
-
-// Default task
-gulp.task('default', gulp.series('clean', 'styles', 'scripts', 'html', 'images', 'svg', 'sprite', 'fonts', 'watch'));
-
-// Build task for production
-gulp.task('build', gulp.series('clean', 'styles', 'scripts', 'html', 'images', 'svg', 'sprite', 'fonts'));
+// Build task - Production mode
+gulp.task('build', gulp.series(
+    'clean',
+    gulp.parallel('styles', 'scripts', 'html', 'images', 'svg', 'sprite', 'fonts')
+));
