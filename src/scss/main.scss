@@ -1,4 +1,4 @@
-@import 'global/global';
+@use 'global/global' as *;
 
 body {
     font-family: $font-family;
